@@ -1,0 +1,284 @@
+% This command makes a section called "Code"
+\section{Code}
+\label{sec:code}
+
+Below are selected portions of the code used to create the Snake Game. These snippets highlight the most critical components that drive the core functionality of the game. The most important parts of the code are found in the callback functions for the interrupts of the buttons being pushed and the interrupt of the timer for the game being triggered. 
+\ref{subsec:main_c} having the code for main.c.
+
+% This command makes a subsection
+\subsection{Code for main.c}
+\label{subsec:main_c}
+
+% Put code between "lstlisting" commands using the CStyle tag, like this:
+\begin{lstlisting}[style=CStyle]
+
+uint32_t lastButtonPressTime = 0;   // Last valid press time (in ms)
+
+bool gameStart = false; 			// player needs to press any button to start the game, this boolean will become true
+bool gameOver = false;				// this variable becomes true when the user looses the game
+bool gameWin = false;				// this variable becomes true if the user wins the game (snake length = 60)
+
+char direction = 'R';				// The initial direction of the snake is always right
+
+typedef struct {
+    int x;
+    int y;
+} Point;
+
+Point snake[59]; 				// Snake body
+int snakeLength = 3;           	// Initial length of the snake
+Point food;                   	// Position of the food
+
+
+main{
+  //Initial snake position
+  snake[0] = (Point){6, 2}; // Initial head position
+  snake[1] = (Point){5, 2}; // Initial body
+  snake[2] = (Point){4, 2}; // Initial body
+  placeFood();
+
+  GLCD_init();  // initialize the screen
+  GLCD_clear(); // clear the screen
+  // Draw borders
+  for (int x = 0; x < maxX; x++) {
+      GLCD_setCursor(x * 6, 0);
+      GLCD_putchar(23); // Top border
+      GLCD_setCursor(x * 6, NUM_BANKS - 1);
+      GLCD_putchar(23); // Bottom border
+  }
+  for (int y = 0; y < maxY + 1; y++) {
+      GLCD_setCursor(0, y );
+      GLCD_putchar(23); // Left border
+      GLCD_setCursor(GLCD_WIDTH - 6, y );
+      GLCD_putchar(23); // Right border
+  }
+
+  HAL_TIM_Base_Start_IT(&htim16); // Start Timer 16
+}
+
+//Interrupt function for game timer
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	// htim16 is the timer set for the game
+	// the game will start when a button is pushed
+
+    if (htim == &htim16 && gameStart && !gameOver && !gameWin) {
+    	//These three functions control the game mechanics
+        moveSnake();
+        checkCollision();
+        drawGame();
+
+	}
+    //The game over
+    if (gameOver)
+    {
+    	GLCD_setCursor(12,2);
+    	//GAME OVER
+    	// 28 1 29 5 0 11 30 5 31
+    	GLCD_putchar(28);	//G
+    	GLCD_putchar(1);	//A
+    	GLCD_putchar(29);	//M
+    	GLCD_putchar(5);	//E
+    	GLCD_putchar(0);	//space
+    	GLCD_putchar(11);	//O
+    	GLCD_putchar(30);	//V
+    	GLCD_putchar(5);	//E
+    	GLCD_putchar(31);	//R
+    }
+
+    if (gameWin){
+    	GLCD_setCursor(12,2);
+    	GLCD_putchar(8);	//W
+
+    }
+}
+
+//Interupt function when a button is pushed
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	
+	//To debounce Buttons
+	uint32_t currentTime = HAL_GetTick();
+	uint32_t timeSinceLastButton = currentTime - lastButtonPressTime;
+		
+	//The first button push will start the game. The game will start with the snake going right no matter what button is pushed
+	if (!gameStart){
+		gameStart = true;
+
+	} else{
+		
+	//This if statement is for button denouncing
+	if (timeSinceLastButton > 100){
+		
+		//The direction of the snake will change depending on which button was pushed
+		if (GPIO_Pin == UpB_Pin){
+			direction = 'U';
+		}
+		if (GPIO_Pin == DownB_Pin){
+			direction = 'D';
+			}
+		if (GPIO_Pin == LeftB_Pin){
+			direction = 'L';
+			}
+		if (GPIO_Pin == RightB_Pin){
+			direction = 'R';
+			}
+		}
+	}
+	lastButtonPressTime = HAL_GetTick();
+}
+
+void moveSnake() {
+    // Check if the snake eats the food
+    if (snake[0].x == food.x && snake[0].y == food.y) {
+        snakeLength++;
+        if (snakeLength == 48) {//48 is the maximum spaces on the SPI board, therefore the game is won when the length = 60
+        	gameWin = true;
+        	gameStart = false;
+
+        }else{
+        placeFood();		//If the snake gets food and the game has not been won, new food must be placed.
+        }
+    }
+
+	// Move the snake's body
+    for (int i = snakeLength - 1; i > 0; i--) {
+        snake[i] = snake[i - 1];
+    }
+
+    // Move the head
+    if (direction == 'U') snake[0].y--;
+    if (direction == 'D') snake[0].y++;
+    if (direction == 'L') snake[0].x--;
+    if (direction == 'R') snake[0].x++;
+
+
+}
+
+void checkCollision() {
+    // Check wall collision
+    if (snake[0].x < 1 || snake[0].x >= maxX || snake[0].y < 1 || snake[0].y >= maxY) {
+        gameOver = true;
+        return;
+    }
+
+    // Check self-collision
+    for (int i = 1; i < snakeLength; i++) {
+        if (snake[0].x == snake[i].x && snake[0].y == snake[i].y) {
+            gameOver = true;
+            return;
+        }
+    }
+}
+
+void drawGame() {
+    GLCD_clear();
+    // Draw borders
+    for (int x = 0; x < maxX; x++) {
+        GLCD_setCursor(x * 6, 0);
+        GLCD_putchar(23); // Top border
+        GLCD_setCursor(x * 6, NUM_BANKS - 1);
+        GLCD_putchar(23); // Bottom border
+    }
+    for (int y = 0; y < maxY + 1; y++) {
+        GLCD_setCursor(0, y );
+        GLCD_putchar(23); // Left border
+        GLCD_setCursor(GLCD_WIDTH - 6, y );
+        GLCD_putchar(23); // Right border
+    }
+
+    // Draw the snake
+    for (int i = 0; i < snakeLength; i++) {
+        GLCD_setCursor(snake[i].x * 6, snake[i].y);
+        GLCD_putchar(14); // Snake body
+    }
+
+    // Draw the food
+    GLCD_setCursor(food.x * 6, food.y);
+    GLCD_putchar(27); // Food
+}
+
+void placeFood() {
+	int isOccupied = 1;
+	do {
+        // Generate random coordinates for food
+        food.x = 1 + rand() % (maxX - 1);  // This ensures x is between 1 and maxX-1
+        food.y = 1 + rand() % (maxY - 1);  // This ensures y is between 1 and maxY-1
+
+        // Check if the food position is occupied by the snake
+        isOccupied = 0;
+        for (int i = 0; i < snakeLength; i++) {
+            if (snake[i].x == food.x && snake[i].y == food.y) {
+                isOccupied = 1; // Food position is occupied by the snake
+                break; // No need to check further if the position is already taken
+            }
+        }
+
+    } while (isOccupied); // Repeat if the food is in the snake's body
+}
+void GLCD_putchar(int font_table_row){
+	int i;
+	for (i=0; i<6; i++){
+		GLCD_data_write(font_table[font_table_row][i]);
+	}
+}
+
+void SPI_write(unsigned char data){
+	// Chip Enable (low is asserted)
+	HAL_GPIO_WritePin(CE_PORT, CE_PIN, GPIO_PIN_RESET);
+
+
+	// Send data over SPI1
+	HAL_SPI_Transmit(&hspi1, (uint8_t*) &data, 1, HAL_MAX_DELAY);
+
+	// Chip Disable
+	HAL_GPIO_WritePin(CE_PORT, CE_PIN, GPIO_PIN_SET);
+}
+
+void GLCD_data_write(unsigned char data){
+	//Switch to "data" mode (D/C pin high)
+	HAL_GPIO_WritePin(DC_PORT, DC_PIN, GPIO_PIN_SET);
+
+	// Send data over SPI
+	SPI_write(data);
+}
+
+void GLCD_command_write(unsigned char data){
+	//Switch to "command" mode (D/C pin low)
+	HAL_GPIO_WritePin(DC_PORT, DC_PIN, GPIO_PIN_RESET);
+
+	// Send data over SPI
+	SPI_write(data);
+}
+
+void GLCD_init(void){
+
+	// Keep CE high when not transmitting
+	HAL_GPIO_WritePin(CE_PORT, CE_PIN, GPIO_PIN_SET);
+
+	//Reset the screen (low pulse - down and up)
+	HAL_GPIO_WritePin(RESET_PORT, RESET_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(RESET_PORT, RESET_PIN, GPIO_PIN_SET);
+
+	//Configure the screen according to the datasheet
+	GLCD_command_write(0x21); //enter extended command mode
+	GLCD_command_write(0xC4); //Set LCD Vop for contrast (this may be adjusted)
+	GLCD_command_write(0x04); //set temp coefficient
+	GLCD_command_write(0x10); //set LCD bias mode (this may be adjusted)
+	GLCD_command_write(0x20); //return to normal command mode
+	GLCD_command_write(0x0C); //set display mode normal
+}
+
+void GLCD_setCursor(unsigned char x, unsigned char y){
+	GLCD_command_write(0x80 | x);	//column
+	GLCD_command_write(0x40 | y);	//bank
+}
+
+void GLCD_clear(void){
+	int i;
+	for(i = 0; i < (GLCD_WIDTH * NUM_BANKS); i++){
+		GLCD_data_write(0x00); //write zeros
+	}
+	GLCD_setCursor(0,0);	//return cursor to top left
+}
+
+
+\end{lstlisting}

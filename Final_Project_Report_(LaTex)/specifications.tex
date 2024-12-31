@@ -1,0 +1,19 @@
+\section{Specifications}
+\label{sec:specifications}
+
+
+    This project utilizes a Nucleo board connected to an SPI display and four push buttons, with each button configured as an interrupt. For detailed wiring instructions, refer to the schematics in Section \ref{sec:schematic}. The program initializes by displaying the border of the play area before the game begins. The game is started by pressing any of the four buttons. Once the game ends, the reset button on the Nucleo board allows the user to restart the game.
+
+    The game begins with the snake spawning at the center of the screen, starting with an initial length of three. A "food" spot is also randomly generated on the screen. The user controls the snake's movement using the four buttons, with each button corresponding to a direction: up, down, left, or right. Every time the snake consumes a food spot, its length increases. The game ends if the snake collides with the border or its own body, at which point a "Game Over" message is displayed. If the snake reaches the maximum possible length of 48 (the capacity of the play area), a "Winner" message is displayed.
+     
+     
+
+\subsection{Parts List}
+
+\begin{itemize}
+    \item Nucleo-L476RG board and USB cable
+    \item PCD8544 GLCD screen
+    \item 4 push buttons
+    \item several jumper wires
+\end{itemize}
+

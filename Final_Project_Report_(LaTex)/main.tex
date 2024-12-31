@@ -1,0 +1,63 @@
+% Welcome to the LaTeX code for this lab report template.
+% Comments start with '%'
+
+% This is were we specify the overall class of document you are creating. You don't need to change this.
+\documentclass[12pt, letterpaper]{article}
+
+% These commands are like including header files
+\input{__usepackages}
+\input{__page_margin}
+
+% This command starts the document
+\begin{document}
+
+% This command says to include all the LaTeX code from titlepage.tex, which includes the Title Page.
+%Go edit the titlepage.txt code first. Then come back here.
+\include{titlepage}
+\newpage
+
+% This command will automatically generate a table of contents, based on what is in the rest of the document.
+% You don't need to change this code.
+\tableofcontents
+\newpage
+
+% These commands will find all tables and figures in the document and create a reference to them.
+% You don't need to change this code.
+\listoftables
+\listoffigures
+\newpage
+
+% This command says to include all the LaTeX code from overview.tex, which includes the Lab Overview Section.
+% Go edit the overview.tex code next. Then come back here.
+\include{overview}
+\newpage
+
+% This command says to include all the LaTeX code from specifications.tex, which includes the Specifications Section.
+% Go edit the specifications.tex code next. Then come back here.
+\include{specifications}
+\newpage
+
+% This command says to include all the LaTeX code from schematics.tex, which includes the Schematics Section.
+% Upload your schematics image file into the "images" folder to the left.
+% Then go edit the schematics.tex file to reference your image.
+\include{schematics}
+\newpage
+
+% This command says to include all the LaTeX code from test.tex, which includes the Test Plan and Test Results Section.
+\include{test_and_results}
+\newpage  
+
+% This command says to include all the LaTeX code from code.tex, which includes the Code Section.
+\include{code}
+\newpage
+
+% This command says to include all the LaTeX code from discussion.tex, which includes the Discussion and Conclusion Section.
+\include{conclusion}
+\newpage
+
+% These commands generate your references from the __ref.bib file using the IEEE standard.
+\bibliographystyle{ieeetr}
+\bibliography{__ref}
+
+% This command ends the document
+\end{document}

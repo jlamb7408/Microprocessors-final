@@ -1,0 +1,43 @@
+\section{Test Plan and Test Results}
+\label{sec:test}
+
+The test procedure for the snake game ensures that all key features of the game function as expected. The tests begin with powering on the Nucleo board and verifying that the play area border is displayed. Once the game starts, each of the four buttons—up, down, left, and right—is tested to confirm that the snake moves in the correct direction when pressed. The game also tests the snake’s ability to grow when consuming food and checks if the game properly ends when the snake collides with the border or its own body. Finally, the test ensures that the game correctly displays a "Winner" message when the snake reaches its maximum length and that the reset button functions to restart the game. This procedure verifies the core gameplay mechanics and ensures the expected results for each action.
+
+\subsection{Test Plan Procedure and Results}
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|p{5cm}|p{6cm}|p{4cm}|}
+\hline
+\textbf{Step} & \textbf{Expected Result} & \textbf{Actual Result} \\
+\hline
+Power on the Nucleo board. & Play area border is displayed; game is idle. & Play area border displayed; game idle. \\ 
+\hline
+Press any button to start the game. & Snake spawns at center with initial length of 3; food appears. & Snake spawned at center with initial length of 3; food appeared. \\ 
+\hline
+Press the "Up" button. & Snake moves upward on the screen. & Snake moved upward on the screen. \\ 
+\hline
+Press the "Down" button. & Snake changes direction downward. & Snake changed direction downward. \\ 
+\hline
+Press the "Left" button. & Snake changes direction left. & Snake changed direction left. \\ 
+\hline
+Press the "Right" button. & Snake changes direction right. & Snake changed direction right. \\ 
+\hline
+Move the snake to a food spot. & Snake grows by one unit; new food appears. & Snake grew by one unit; new food appeared. \\ 
+\hline
+Collide the snake with the border. & "Game Over" message appears. & "Game Over" displayed. \\ 
+\hline
+Collide the snake with its own body. & "Game Over" message appears. & "Game Over" displayed. \\ 
+\hline
+Reach snake length of 48. & Winner message appears. & Winner message displayed. \\ 
+\hline
+Press the reset button. & Game resets; play area border displayed again. & Game reset; play area border displayed again. \\ 
+\hline
+\end{tabular}
+\caption{Snake Game Test Procedures}
+\label{tab:test_procedures}
+\end{table}
+
+
+
+
